@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const Store = mongoose.model('Store');
+//to handle multipart form data (img upload)
+const multer = require('multer');
 
 exports.homePage = (req, res) => {
     res.render('index', {
@@ -47,6 +49,9 @@ exports.editStore = async (req, res) => {
 //need to find and update the store and signal success if so
 exports.updateStore = async (req, res) => {
     //params: query, data (for us in req.body), options (set new = true to return new store instead of old and runValidators = true to make sure required fields filled out)
+
+    //store's location type gets 'unset' on edit, need to ensure it is Point
+    req.body.location.type = 'Point';
     const store = await Store.findOneAndUpdate({_id: req.params.id}, req.body, {new: true, runValidators: true}).exec();
     req.flash('success', `Successfully edited ${store.name}. <a href="/stores/${store.slug}">View the Store</a>`);
     res.redirect(`/stores/${store._id}/edit`);

@@ -14,7 +14,26 @@ const storeSchema = new mongoose.Schema({
         type: String,
         trime: true
     },
-    tags: [String]
+    tags: [String],
+    created: {
+        type: Date,
+        default: Date.now
+    },
+    location: {
+        type: {
+            type: String,
+            default: 'Point'
+        },
+        //lng then lat inside coordinates array
+        coordinates: [{
+            type: Number, 
+            required: 'You must supply coordinates.'
+        }],
+        address: {
+            type: String,
+            required: 'You must supply an address.'
+        }
+    }
 });
 
 //auto generate slug with each save
