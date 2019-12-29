@@ -2,6 +2,22 @@ const mongoose = require('mongoose');
 const Store = mongoose.model('Store');
 //to handle multipart form data (img upload)
 const multer = require('multer');
+const jimp = require('jimp');
+const uuid = require('uuid');
+
+//setup for multer - where to store file and what types
+const multerOptions = {
+    storage: multer.memoryStorage(),
+    fileFilter(req, file, next) {
+        const isPhoto = file.mimetype.startsWith('image/');
+        if(isPhoto){
+            next(null, true);
+        }
+        else{
+            next({message: 'Invalid file type.'}, false);
+        }
+    }
+};
 
 exports.homePage = (req, res) => {
     res.render('index', {
@@ -14,6 +30,32 @@ exports.addStore = (req, res) => {
     res.render('editStore', {
         title: 'Add Store'
     });
+};
+
+//middleware to upload and read to memory, use before createStore
+exports.upload = multer(multerOptions).single('photo');
+
+//middleware to resize img, use before createStore
+exports.resize = async (req, res, next) => {
+    //skip this middleware if no file
+    if(!req.file){
+        next();
+        return;
+    }
+
+    //pull out the file extension then use uuid is used to generate a unique name
+    //save photo to req.body to for the store 
+    const extension = req.file.mimetype.split('/')[1];
+    req.body.photo = `${uuid.v4()}.${extension}`; 
+
+    //resize, read takes filepath or a buffer
+    const photo = await jimp.read(req.file.buffer);
+    await photo.resize(800, jimp.AUTO);
+
+    //write to folder
+    await photo.write(`./public/uploads/${req.body.photo}`);
+
+    next();
 };
 
 //after user submits form, save to DB
