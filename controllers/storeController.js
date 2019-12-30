@@ -97,4 +97,32 @@ exports.updateStore = async (req, res) => {
     const store = await Store.findOneAndUpdate({_id: req.params.id}, req.body, {new: true, runValidators: true}).exec();
     req.flash('success', `Successfully edited ${store.name}. <a href="/stores/${store.slug}">View the Store</a>`);
     res.redirect(`/stores/${store._id}/edit`);
-}
+};
+
+//clicking on store name to display info
+exports.getStoreBySlug = async (req, res, next) => {
+    //only info we have to go by is slug in the req.params
+    const store = await Store.findOne({
+        slug: req.params.slug
+    });
+
+    //no store to query, 404
+    if(!store){
+        return next();
+    }
+
+    res.render('store', {
+        store
+    });
+};
+
+//need to get list of all stores, get tags, then sum up tags
+exports.getStoresByTag = async (req, res) => {
+    const tags = await Store.getTagsList();
+    const tagName = req.params.tag;
+    res.render('tags', {
+        tags,
+        title: 'Tags',
+        tagName
+    });
+};

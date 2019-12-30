@@ -38,13 +38,34 @@ const storeSchema = new mongoose.Schema({
 });
 
 //auto generate slug with each save
-storeSchema.pre('save', function(next){
+storeSchema.pre('save', async function(next){
     //TODO in future: update slugs for unique stores
     if(!this.isModified('name')){
         return next();
     }
     this.slug = slug(this.name);
+
+    //find other stores that have a slug of store, store-2, store-3, etc. to bump up the latest # for the newest slug
+    //regex finds slugs starting with slug name and ending with -number (optional)
+    const slugRegEx = new RegExp(`^(${this.slug})((-[0-9]*)?)$`, 'i');
+    //access Store Model before making the actual schema, use this; return list of matches
+    const storeWithSlug = await this.constructor.find({ slug: slugRegEx});
+
+    //match found
+    if(storeWithSlug.length){
+        this.slug = `${this.slug}-${storeWithSlug.length + 1}`;
+    }
+
     next();
 });
+
+//adding our own method to storeSchema to get a list of all Store tags; extract all tags from Stores with unwind, group them by tag field, then get sum
+storeSchema.statics.getTagsList = function(){
+    return this.aggregate([
+        { $unwind: '$tags'},
+        { $group: {_id: '$tags', count: { $sum: 1}}},
+        {$sort: {count: -1}}
+    ]);
+};
 
 module.exports = mongoose.model('Store', storeSchema);
