@@ -116,13 +116,21 @@ exports.getStoreBySlug = async (req, res, next) => {
     });
 };
 
-//need to get list of all stores, get tags, then sum up tags
+//get tags, get stores for each tag, then sum up tags
 exports.getStoresByTag = async (req, res) => {
-    const tags = await Store.getTagsList();
     const tagName = req.params.tag;
+    //on initial visit to tags no tag is selected; we need to show all stores
+    const tagQuery = tagName || {$exists: true};
+    const tagsPromise = Store.getTagsList();
+    const storesPromise = Store.find({tags: tagQuery});
+
+    const result = await Promise.all([tagsPromise, storesPromise]);
+
+    let tags = result[0];
+    let stores = result[1];
     res.render('tags', {
         tags,
-        title: 'Tags',
+        stores,
         tagName
     });
 };
