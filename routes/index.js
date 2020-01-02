@@ -2,12 +2,13 @@ const express = require('express');
 const router = express.Router();
 const storeController = require('../controllers/storeController');
 const userController = require('../controllers/userController');
+const authController = require('../controllers/authController');
 const { catchErrors }  = require('../handlers/errorHandlers');
 
 // Do work here
 router.get('/', catchErrors(storeController.getStores));
 router.get('/stores', catchErrors(storeController.getStores));
-router.get('/add', storeController.addStore);
+router.get('/add', authController.isLoggedIn, storeController.addStore);
 
 //handle submitting form for new Store (_storeForm.pug), this is asynchronous
 router.post('/add', 
@@ -32,6 +33,18 @@ router.get('/login', userController.loginForm);
 router.get('/register', userController.registerForm);
 
 //need to validate registration, register the user, then log in when done with registration
-router.post('/register', userController.validateRegister);
+router.post('/register', 
+  userController.validateRegister,
+  userController.register,
+  authController.login
+);
+
+router.post('/login', authController.login);
+
+router.get('/logout', authController.logout);
+
+//access to account after logged in
+router.get('/account', authController.isLoggedIn,userController.account);
+router.post('/account', catchErrors(userController.updateAccount));
 
 module.exports = router;

@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const User = mongoose.model('User');
+const promisify = require('es6-promisify');
 
 exports.loginForm = (req, res) => {
     res.render('login', {
@@ -40,4 +42,42 @@ exports.validateRegister = (req, res, next) => {
         return;
     }
     next();
+};
+
+//done after validateRegister, req.body has Name, Email, Password, and Confirm Password
+exports.register = async (req, res, next) => {
+    //passportLocalMongoose gives us the register function; will use register instead of save so we take password, hash it, and save it DB
+    const user = new User({
+        email: req.body.email,
+        name: req.body.name
+    });
+    //make register promise based and bind to User model
+    const registerWithPromise = promisify(User.register, User);
+    await registerWithPromise(user, req.body.password);
+    next();
+    //pass it off to authController
+};
+
+exports.account = async (req, res) => {
+    res.render('account', {
+        title: 'Edit your account'
+    });
+};
+
+//take all the data in the form and update the fields (not the hash)
+exports.updateAccount = async (req, res) => {
+    const updates = {
+        name: req.body.name,
+        email: req.body.email
+    };
+
+    //params to findOneAndUpdate: query, update, options
+    const user = await User.findOneAndUpdate(
+        { _id: req.user._id },
+        { $set: updates },
+        { new: true, runValidators: true, context: 'query'}
+    );
+
+    req.flash('success', 'Updated your profile.');
+    res.redirect('/account');
 };
