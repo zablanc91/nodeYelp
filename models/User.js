@@ -21,7 +21,9 @@ const userSchema = new Schema({
         type: String,
         require: 'Please enter a name.',
         trim: true
-    }
+    },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date
 });
 
 //generated gravatar with hash of email address

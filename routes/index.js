@@ -40,11 +40,18 @@ router.post('/register',
 );
 
 router.post('/login', authController.login);
-
 router.get('/logout', authController.logout);
 
 //access to account after logged in
 router.get('/account', authController.isLoggedIn,userController.account);
 router.post('/account', catchErrors(userController.updateAccount));
+
+router.post('/account/forgot', catchErrors(authController.forgot));
+
+//clicking reset URL
+router.get('/account/reset/:token', catchErrors(authController.reset));
+
+//submitting password reset
+router.post('/account/reset/:token', authController.confirmPasswords, catchErrors(authController.updatePassword));
 
 module.exports = router;
