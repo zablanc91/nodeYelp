@@ -18,6 +18,7 @@ const transport = nodemailer.createTransport({
 const generateHTML = (filename, options = {}) => {
     //renderFile takes the path of the pug file you need; __dirname is our current location @ handlers folder
     const html = pug.renderFile(`${__dirname}/../views/email/${filename}.pug`, options);
+    //juice is used to make our html inlined
     const inline = juice(html);
     return inline;
 };
