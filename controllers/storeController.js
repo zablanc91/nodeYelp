@@ -161,3 +161,29 @@ exports.searchStores = async (req, res) => {
 
     res.json(stores);
 };
+
+exports.mapStores = async (req, res) => {
+    const coordinates = [req.query.lng, req.query.lat].map(parseFloat);
+    
+    //need query to search for stores where location property is near, max distance of 10 miles
+    const query = {
+        location: {
+            $near: {
+                $geometry: {
+                    type: 'Point',
+                    coordinates
+                },
+                $maxDistance: 16093 //meters to miles
+            }
+        }
+    };
+
+    const stores = await Store.find(query).select('slug name description location photo').limit(10);
+    res.json(stores);
+};
+
+exports.mapPage = (req, res) => {
+    res.render('map', {
+        title: 'Map'
+    });
+};

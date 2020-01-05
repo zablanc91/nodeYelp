@@ -48,6 +48,11 @@ storeSchema.index({
     description: 'text'
 });
 
+//index location for map
+storeSchema.index({
+    location: '2dsphere'
+});
+
 //auto generate slug with each save
 storeSchema.pre('save', async function(next){
     //TODO in future: update slugs for unique stores
