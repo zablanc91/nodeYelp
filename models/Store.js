@@ -42,6 +42,12 @@ const storeSchema = new mongoose.Schema({
     }
 });
 
+//indexes, will use name and description help our search
+storeSchema.index({
+    name: 'text',
+    description: 'text'
+});
+
 //auto generate slug with each save
 storeSchema.pre('save', async function(next){
     //TODO in future: update slugs for unique stores

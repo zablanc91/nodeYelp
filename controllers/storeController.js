@@ -143,3 +143,21 @@ exports.getStoresByTag = async (req, res) => {
         tagName
     });
 };
+
+//utilize index made on Store name and description
+exports.searchStores = async (req, res) => {
+    //fields indexed as text, use text search
+    //meta set to have 'score' based on occurence of word, sort from highest to lowest
+    const stores = await Store
+    .find({
+        $text: { $search: req.query.q }
+    }, {
+        score: { $meta: 'textScore' }
+    })
+    .sort({
+        score: { $meta: 'textScore'}
+    })
+    .limit(5);
+
+    res.json(stores);
+};
