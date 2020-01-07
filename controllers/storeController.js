@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Store = mongoose.model('Store');
+const User = mongoose.model('User');
 //to handle multipart form data (img upload)
 const multer = require('multer');
 const jimp = require('jimp');
@@ -186,4 +187,23 @@ exports.mapPage = (req, res) => {
     res.render('map', {
         title: 'Map'
     });
+};
+
+//hearts or unhearts a Store on click
+exports.heartStore = async (req, res) => {
+    const hearts = req.user.hearts.map(obj => obj.toString());
+    const operator = hearts.includes(req.params.id) ? '$pull' : '$addToSet';
+
+    //after heart or unheart, update the User
+    //3rd argument new:true assigns the updated user to const user
+    const user = await User.findByIdAndUpdate(req.user._id, 
+        {
+            [operator] : { hearts: req.params.id }
+        }, 
+        { 
+            new: true 
+        }
+    );
+
+    res.json(user);
 };
