@@ -3,6 +3,7 @@ const router = express.Router();
 const storeController = require('../controllers/storeController');
 const userController = require('../controllers/userController');
 const authController = require('../controllers/authController');
+const reviewController = require('../controllers/reviewController');
 const { catchErrors }  = require('../handlers/errorHandlers');
 
 // Do work here
@@ -55,6 +56,12 @@ router.get('/account/reset/:token', catchErrors(authController.reset));
 router.post('/account/reset/:token', authController.confirmPasswords, catchErrors(authController.updatePassword));
 
 router.get('/map', storeController.mapPage);
+
+//show list of hearted stores for authenticated users
+router.get('/hearts', authController.isLoggedIn,storeController.showHearts);
+
+//allow authenticated users to post Reviews
+router.post('/reviews/:id', authController.isLoggedIn, catchErrors(reviewController.addReview));
 
 //API Endpoints
 router.get('/api/search', catchErrors(storeController.searchStores));

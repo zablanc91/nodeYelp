@@ -13,7 +13,7 @@ function ajaxHeart(e){
             const isHearted = this.heart.classList.toggle('heart__button--hearted');
             document.querySelector('.heart-count').textContent = res.data.hearts.length;
 
-            //add a little animation and then remove class afterwards (hearts.scss)
+            //add a little animation and then remove class afterwards (_heart.scss)
             if(isHearted){
                 this.heart.classList.add('heart__button--float');
                 setTimeout(() => this.heart.classList.remove('heart__button--float'), 2000);

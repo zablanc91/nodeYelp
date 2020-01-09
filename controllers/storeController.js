@@ -207,3 +207,17 @@ exports.heartStore = async (req, res) => {
 
     res.json(user);
 };
+
+exports.showHearts = async (req, res) => {
+    const hearts = req.user.hearts;
+
+    //find stores where the _id is in User's hearted stores
+    const stores = await Store.find({
+        _id: {$in: hearts}
+    });
+
+    res.render('stores', {
+        title: 'Hearted Stores',
+        stores
+    });
+};
