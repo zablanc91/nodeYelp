@@ -27,4 +27,13 @@ const reviewSchema = new mongoose.Schema({
     }
 });
 
+//whenever review is queried, automatically populate the author field to have the User instead of just ObjectId
+function autopopulate(next){
+    this.populate('author');
+    next();
+}
+
+reviewSchema.pre('find', autopopulate);
+reviewSchema.pre('findOne', autopopulate);
+
 module.exports = mongoose.model('Review', reviewSchema);

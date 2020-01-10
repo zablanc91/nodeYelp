@@ -1,0 +1,12 @@
+mixin review(review)
+    .review__header
+        .review__author
+            img.avatar(src=review.author.gravatar)
+            p #{review.author.name}
+        .review__stars(title=`Rated ${review.rating} out of 5 Stars`)
+            = `★`.repeat(review.rating)
+        //- use moment helper library to get time since review written
+        time.review__time(datetime=review.createdDate)
+            = h.moment(review.createdDate).fromNow()
+    .review__body
+        p #{review.text}

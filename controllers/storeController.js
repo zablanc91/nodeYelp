@@ -114,7 +114,7 @@ exports.getStoreBySlug = async (req, res, next) => {
     //only info we have to go by is slug in the req.params
     const store = await Store.findOne({
         slug: req.params.slug
-    });
+    }).populate('author reviews');
 
     //no store to query, 404
     if(!store){
