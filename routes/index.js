@@ -63,6 +63,8 @@ router.get('/hearts', authController.isLoggedIn,storeController.showHearts);
 //allow authenticated users to post Reviews
 router.post('/reviews/:id', authController.isLoggedIn, catchErrors(reviewController.addReview));
 
+router.get('/top', catchErrors(storeController.getTopStores));
+
 //API Endpoints
 router.get('/api/search', catchErrors(storeController.searchStores));
 

@@ -87,6 +87,48 @@ storeSchema.statics.getTagsList = function(){
     ]);
 };
 
+//make complex query for MongoDB to get top stores
+storeSchema.statics.getTopStores = function(){
+    return this.aggregate([
+        //grab all Stores and populate the reviews (name of the new field)
+        { 
+            $lookup: {
+                from: 'reviews', 
+                localField: '_id', 
+                foreignField: 'store', 
+                as: 'reviews'
+            }
+        },
+        //filter for >= 2 reviews, see if review at index 1 (the 2nd) exists
+        { 
+            $match: {
+                'reviews.1': { $exists: true}
+            }
+        },
+        //get avg rating of all of a Store's reviews, make new field
+        //need to manually re-add some old fields with $project
+        {
+            $project: {
+                photo: '$$ROOT.photo',
+                averageRating: { $avg: '$reviews.rating'},
+                name: '$$ROOT.name',
+                slug: '$$ROOT.slug',
+                reviews: '$$ROOT.reviews'
+            }
+        },
+        //sort by averageRating, from high to low
+        {
+            $sort: {
+                averageRating: -1
+            }
+        },
+        //limit to the top 10
+        {
+            $limit: 10
+        }
+    ]);
+};
+
 //find reviews where the Store's _id is equal to Review's store property
 storeSchema.virtual('reviews', {
     //go to Review model and make query
@@ -95,5 +137,14 @@ storeSchema.virtual('reviews', {
     localField: '_id',
     foreignField: 'store'
 });
+
+//include Reviews since it is a virtual field whenever we query for Stores
+function autopopulate(next){
+    this.populate('reviews');
+    next();
+}
+
+storeSchema.pre('find', autopopulate);
+storeSchema.pre('findOne', autopopulate);
 
 module.exports = mongoose.model('Store', storeSchema);
