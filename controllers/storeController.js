@@ -67,12 +67,40 @@ exports.createStore = async (req, res) => {
     res.redirect(`/store/${store.slug}`);
 };
 
-//first query the DB for list of all stores then render
 exports.getStores = async (req, res) => {
-    const stores = await Store.find();
+    const pageNumber = req.params.page || 1;
+    const limit = 4;
+
+    //page 1: show 1-4, page 2: skip 1-4 and show 5-8, etc.
+    const skip = (pageNumber * limit) - limit;
+
+    //for pagination, get stores to show for current page
+    const storesPromise = Store
+        .find()
+        .skip(skip)
+        .limit(limit)
+        .sort({ created: 'desc' });
+
+    //get # of Stores
+    const countPromise = Store.count();
+
+    const [stores, count] = await Promise.all([storesPromise, countPromise]);
+
+    const pages = Math.ceil(count/limit);
+    
+    //in case of invalid url and out of range page #, redirect to last page
+    if(!stores.length && skip){
+        req.flash('info', `Requested for page ${pageNumber}, but it doesn't exist. Redirected to page ${pages}.`);
+        res.redirect(`/stores/page/${pages}`);
+        return;
+    }
+
     res.render('stores', {
         title: 'Stores',
-        stores
+        stores,
+        pageNumber,
+        pages,
+        count
     });
 };
 
